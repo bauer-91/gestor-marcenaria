@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum StatusOrcamento {
+  pendente
+  aprovado
+  rejeitado
+}
+
+enum StatusProducao {
+  pendente
+  em_andamento
+  concluido
+}
+
+enum StatusPagamento {
+  pendente
+  pago
+  atrasado
+}
+
+model Cliente {
+  id         Int          @id @default(autoincrement())
+  nome       String
+  telefone   String?
+  email      String?
+  cpf        String?
+  criadoEm   DateTime     @default(now())
+
+  orcamentos Orcamento[]
+}
+
+model Orcamento {
+  id          Int                @id @default(autoincrement())
+  descricao   String?
+  valorTotal  Decimal            @default(0)
+  status      StatusOrcamento    @default(pendente)
+  criadoEm    DateTime           @default(now())
+
+  clienteId   Int
+  cliente     Cliente            @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  itens       OrcamentoItem[]
+  producao    Producao?
+  pagamentos  Pagamento[]
+
+  @@index([clienteId])
+}
+
+model OrcamentoItem {
+  id             Int       @id @default(autoincrement())
+  nome           String
+  quantidade     Int
+  precoUnitario  Decimal
+  total          Decimal
+
+  orcamentoId    Int
+  orcamento      Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+
+  @@index([orcamentoId])
+}
+
+model Producao {
+  id           Int              @id @default(autoincrement())
+  status       StatusProducao   @default(pendente)
+  dataInicio   DateTime?
+  dataFim      DateTime?
+
+  orcamentoId  Int        @unique
+  orcamento    Orcamento  @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+}
+
+model Pagamento {
+  id             Int               @id @default(autoincrement())
+  valor          Decimal
+  dataPagamento  DateTime?
+  metodo         String?
+  status         StatusPagamento   @default(pendente)
+
+  orcamentoId    Int
+  orcamento      Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+
+  @@index([orcamentoId])
+}
