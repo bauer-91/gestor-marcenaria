@@ -1,14 +1,26 @@
-# Node
+# Dependências Node
 node_modules/
+
+# Prisma Client gerado
+generated/
 
 # Variáveis de ambiente
 .env
 
 # Banco SQLite
 *.db
+*.db-journal
 
 # Logs
 *.log
+npm-debug.log*
 
 # Build
 dist/
+
+# VS Code (opcional)
+.vscode/settings.json
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
