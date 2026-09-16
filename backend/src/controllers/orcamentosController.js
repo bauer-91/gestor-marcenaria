@@ -20,6 +20,12 @@ async function criarOrcamento(req, res) {
   try {
     const { clienteId, descricao, status, itens } = req.body;
 
+    if (!clienteId || !Array.isArray(itens) || itens.length === 0) {
+      return res.status(400).json({
+        erro: "Cliente e pelo menos um item são obrigatórios"
+      });
+    }
+
     const valorTotal = itens.reduce((total, item) => {
       return total + Number(item.quantidade) * Number(item.precoUnitario);
     }, 0);
@@ -67,24 +73,46 @@ async function buscarOrcamento(req, res) {
     });
 
     if (!orcamento) {
-      return res.status(404).json({ erro: "Orçamento não encontrado" });
+      return res.status(404).json({
+        erro: "Orçamento não encontrado"
+      });
     }
 
     res.json(orcamento);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ erro: "Erro ao buscar orçamento" });
+    res.status(500).json({
+      erro: "Erro ao buscar orçamento"
+    });
   }
 }
 
 async function atualizarOrcamento(req, res) {
   try {
     const id = Number(req.params.id);
-    const { descricao, status, itens } = req.body;
+    const { clienteId, descricao, status, itens } = req.body;
+
+    if (!clienteId || !Array.isArray(itens) || itens.length === 0) {
+      return res.status(400).json({
+        erro: "Cliente e pelo menos um item são obrigatórios"
+      });
+    }
 
     const valorTotal = itens.reduce((total, item) => {
       return total + Number(item.quantidade) * Number(item.precoUnitario);
     }, 0);
+
+    const orcamentoExistente = await prisma.orcamento.findUnique({
+      where: {
+        id
+      }
+    });
+
+    if (!orcamentoExistente) {
+      return res.status(404).json({
+        erro: "Orçamento não encontrado"
+      });
+    }
 
     const orcamento = await prisma.$transaction(async (tx) => {
       await tx.orcamentoItem.deleteMany({
@@ -98,8 +126,9 @@ async function atualizarOrcamento(req, res) {
           id
         },
         data: {
+          clienteId: Number(clienteId),
           descricao,
-          status,
+          status: status || "pendente",
           valorTotal,
           itens: {
             create: itens.map((item) => ({
@@ -120,7 +149,9 @@ async function atualizarOrcamento(req, res) {
     res.json(orcamento);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ erro: "Erro ao atualizar orçamento" });
+    res.status(500).json({
+      erro: "Erro ao atualizar orçamento"
+    });
   }
 }
 
@@ -128,16 +159,32 @@ async function excluirOrcamento(req, res) {
   try {
     const id = Number(req.params.id);
 
+    const orcamentoExistente = await prisma.orcamento.findUnique({
+      where: {
+        id
+      }
+    });
+
+    if (!orcamentoExistente) {
+      return res.status(404).json({
+        erro: "Orçamento não encontrado"
+      });
+    }
+
     await prisma.orcamento.delete({
       where: {
         id
       }
     });
 
-    res.json({ mensagem: "Orçamento excluído com sucesso" });
+    res.json({
+      mensagem: "Orçamento excluído com sucesso"
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ erro: "Erro ao excluir orçamento" });
+    res.status(500).json({
+      erro: "Erro ao excluir orçamento"
+    });
   }
 }
 

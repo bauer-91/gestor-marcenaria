@@ -13,8 +13,9 @@ enum StatusOrcamento {
 }
 
 enum StatusProducao {
-  pendente
-  em_andamento
+  aguardando_material
+  em_producao
+  em_montagem
   concluido
 }
 
@@ -67,7 +68,7 @@ model OrcamentoItem {
 
 model Producao {
   id           Int              @id @default(autoincrement())
-  status       StatusProducao   @default(pendente)
+  status       StatusProducao   @default(aguardando_material)
   dataInicio   DateTime?
   dataFim      DateTime?
 
