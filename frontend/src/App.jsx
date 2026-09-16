@@ -61,6 +61,10 @@ function App() {
         </button>
 
       </main>
+
+    <footer className="rodape">
+      Desenvolvido por Matias Bauer.
+    </footer>
     </div>
   );
 }
