@@ -2,6 +2,7 @@ const express = require("express");
 const clientesRoutes = require("./routes/clientes");
 const orcamentosRoutes = require("./routes/orcamentos");
 const producaoRoutes = require("./routes/producao");
+const pagamentosRoutes = require("./routes/pagamentos");
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use("/clientes", clientesRoutes);
 app.use("/orcamentos", orcamentosRoutes);
 
 app.use("/producoes", producaoRoutes);
+
+app.use("/pagamentos", pagamentosRoutes);
 
 app.get("/", (req, res) => {
   res.send("Gestor Marcenaria API");

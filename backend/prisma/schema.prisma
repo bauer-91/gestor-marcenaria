@@ -22,7 +22,6 @@ enum StatusProducao {
 enum StatusPagamento {
   pendente
   pago
-  atrasado
 }
 
 model Cliente {
