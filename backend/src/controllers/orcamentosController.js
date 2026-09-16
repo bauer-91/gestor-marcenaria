@@ -5,7 +5,8 @@ async function listarOrcamentos(req, res) {
     const orcamentos = await prisma.orcamento.findMany({
       include: {
         cliente: true,
-        itens: true
+        itens: true,
+        producao: true
       }
     });
 
@@ -30,25 +31,39 @@ async function criarOrcamento(req, res) {
       return total + Number(item.quantidade) * Number(item.precoUnitario);
     }, 0);
 
-    const orcamento = await prisma.orcamento.create({
-      data: {
-        clienteId: Number(clienteId),
-        descricao,
-        status: status || "pendente",
-        valorTotal,
-        itens: {
-          create: itens.map((item) => ({
-            nome: item.nome,
-            quantidade: Number(item.quantidade),
-            precoUnitario: Number(item.precoUnitario),
-            total: Number(item.quantidade) * Number(item.precoUnitario)
-          }))
+    const orcamento = await prisma.$transaction(async (tx) => {
+      const novoOrcamento = await tx.orcamento.create({
+        data: {
+          clienteId: Number(clienteId),
+          descricao,
+          status: status || "pendente",
+          valorTotal,
+          itens: {
+            create: itens.map((item) => ({
+              nome: item.nome,
+              quantidade: Number(item.quantidade),
+              precoUnitario: Number(item.precoUnitario),
+              total:
+                Number(item.quantidade) * Number(item.precoUnitario)
+            }))
+          }
+        },
+        include: {
+          cliente: true,
+          itens: true
         }
-      },
-      include: {
-        cliente: true,
-        itens: true
+      });
+
+      if (novoOrcamento.status === "aprovado") {
+        await tx.producao.create({
+          data: {
+            orcamentoId: novoOrcamento.id,
+            status: "aguardando_material"
+          }
+        });
       }
+
+      return novoOrcamento;
     });
 
     res.status(201).json(orcamento);
@@ -63,12 +78,11 @@ async function buscarOrcamento(req, res) {
     const id = Number(req.params.id);
 
     const orcamento = await prisma.orcamento.findUnique({
-      where: {
-        id
-      },
+      where: { id },
       include: {
         cliente: true,
-        itens: true
+        itens: true,
+        producao: true
       }
     });
 
@@ -103,8 +117,9 @@ async function atualizarOrcamento(req, res) {
     }, 0);
 
     const orcamentoExistente = await prisma.orcamento.findUnique({
-      where: {
-        id
+      where: { id },
+      include: {
+        producao: true
       }
     });
 
@@ -114,6 +129,8 @@ async function atualizarOrcamento(req, res) {
       });
     }
 
+    const novoStatus = status || orcamentoExistente.status;
+
     const orcamento = await prisma.$transaction(async (tx) => {
       await tx.orcamentoItem.deleteMany({
         where: {
@@ -121,21 +138,20 @@ async function atualizarOrcamento(req, res) {
         }
       });
 
-      return await tx.orcamento.update({
-        where: {
-          id
-        },
+      const orcamentoAtualizado = await tx.orcamento.update({
+        where: { id },
         data: {
           clienteId: Number(clienteId),
           descricao,
-          status: status || "pendente",
+          status: novoStatus,
           valorTotal,
           itens: {
             create: itens.map((item) => ({
               nome: item.nome,
               quantidade: Number(item.quantidade),
               precoUnitario: Number(item.precoUnitario),
-              total: Number(item.quantidade) * Number(item.precoUnitario)
+              total:
+                Number(item.quantidade) * Number(item.precoUnitario)
             }))
           }
         },
@@ -144,6 +160,24 @@ async function atualizarOrcamento(req, res) {
           itens: true
         }
       });
+
+      /*
+       * Se o orçamento foi aprovado e ainda não possui
+       * produção, cria a produção automaticamente.
+       */
+      if (
+        novoStatus === "aprovado" &&
+        !orcamentoExistente.producao
+      ) {
+        await tx.producao.create({
+          data: {
+            orcamentoId: id,
+            status: "aguardando_material"
+          }
+        });
+      }
+
+      return orcamentoAtualizado;
     });
 
     res.json(orcamento);
@@ -160,9 +194,7 @@ async function excluirOrcamento(req, res) {
     const id = Number(req.params.id);
 
     const orcamentoExistente = await prisma.orcamento.findUnique({
-      where: {
-        id
-      }
+      where: { id }
     });
 
     if (!orcamentoExistente) {
@@ -172,9 +204,7 @@ async function excluirOrcamento(req, res) {
     }
 
     await prisma.orcamento.delete({
-      where: {
-        id
-      }
+      where: { id }
     });
 
     res.json({

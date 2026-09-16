@@ -1,11 +1,21 @@
 import { useState } from "react";
 import Clientes from "./pages/Clientes";
+import Orcamentos from "./pages/Orcamentos";
+import Producao from "./pages/Producao";
 
 function App() {
   const [pagina, setPagina] = useState("menu");
 
   if (pagina === "clientes") {
     return <Clientes onVoltar={() => setPagina("menu")} />;
+  }
+
+  if (pagina === "orcamentos") {
+    return <Orcamentos onVoltar={() => setPagina("menu")} />;
+  }
+
+  if (pagina === "producao") {
+    return <Producao onVoltar={() => setPagina("menu")} />;
   }
 
   return (
@@ -24,11 +34,17 @@ function App() {
           <strong>Clientes</strong>
         </button>
 
-        <button className="menu-item">
+        <button
+          className="menu-item"
+          onClick={() => setPagina("orcamentos")}
+        >
           <strong>Orçamentos</strong>
         </button>
 
-        <button className="menu-item">
+        <button
+          className="menu-item"
+          onClick={() => setPagina("producao")}
+        >
           <strong>Produção</strong>
         </button>
 
