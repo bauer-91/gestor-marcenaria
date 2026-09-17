@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const app = express();
 
 // Importando os arquivos das rotas dos módulos
@@ -17,11 +18,12 @@ app.use("/orcamentos", orcamentosRoutes);
 app.use("/producoes", producaoRoutes);
 app.use("/pagamentos", pagamentosRoutes);
 
+// Configurando o caminho dos arquivos do frontend
+const caminhoFrontend = path.join(__dirname, "../../frontend/dist");
+app.use(express.static(caminhoFrontend));
 
-// Mensagem apresentada ao acessar a API pelo navegador na porta 3001
-app.get("/", (req, res) => {
-  res.send("Gestor Marcenaria API");
-});
+// Rota para a pagina inicial
+app.get("/", (req, res) => {res.sendFile(path.join(caminhoFrontend, "index.html"));});
 
 // Define a porta em que o servidor irá rodar, no caso 3001
 const PORT = 3001;
