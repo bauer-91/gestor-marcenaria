@@ -5,7 +5,6 @@ Sistema para gerenciamento de:
 - Clientes
 - Orçamentos
 - Produção
-- Vendas
 - Pagamentos
 
 ## Tecnologias
