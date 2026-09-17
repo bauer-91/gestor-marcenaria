@@ -5,11 +5,7 @@ async function listarOrcamentos(req, res) {
   try {
     // Busca todos os orçamentos no banco de dados, com os dados do cliente, itens e produção
     const orcamentos = await prisma.orcamento.findMany({
-      include: {
-        cliente: true,
-        itens: true,
-        producao: true
-      }
+      include: {cliente: true, itens: true, producao: true}
     });
     // Se encontra orçamentos, retorna os orçamentos encontrados
     res.json(orcamentos);
@@ -27,7 +23,7 @@ async function criarOrcamento(req, res) {
     // Pega os dados do orçamento a partir dos dados que vem do front-end
     const { clienteId, descricao, status, itens } = req.body;
 
-    // Só permite criar um orçamento se o nome do cliente e pelo menos um outro campo forem informados
+    // Só permite criar o orçamento se houver um cliente
     if (!clienteId || !Array.isArray(itens) || itens.length === 0) {
       return res.status(400).json({
         erro: "Cliente e pelo menos um item são obrigatórios"
@@ -42,12 +38,7 @@ async function criarOrcamento(req, res) {
     // Cria o orçamento no banco de dados
     const orcamento = await prisma.$transaction(async (tx) => {
       const novoOrcamento = await tx.orcamento.create({
-        data: {
-          clienteId: Number(clienteId),
-          descricao,
-          status: status || "pendente",
-          valorTotal,
-          itens: {
+        data: {clienteId: Number(clienteId), descricao, status: status || "pendente",valorTotal,itens: {
             create: itens.map((item) => ({
               nome: item.nome,
               quantidade: Number(item.quantidade),
@@ -57,18 +48,12 @@ async function criarOrcamento(req, res) {
             }))
           }
         },
-        include: {
-          cliente: true,
-          itens: true
-        }
+        include: {cliente: true, itens: true}
       });
       // Se o orçamento for aprovado, cria a produção automaticamente com o status aguardando material
       if (novoOrcamento.status === "aprovado") {
         await tx.producao.create({
-          data: {
-            orcamentoId: novoOrcamento.id,
-            status: "aguardando_material"
-          }
+          data: {orcamentoId: novoOrcamento.id, status: "aguardando_material"}
         });
       }
 
@@ -106,9 +91,7 @@ async function atualizarOrcamento(req, res) {
     // Busca o orçamento no banco e verifica se já foi criado um id para produção ou não
     const orcamentoExistente = await prisma.orcamento.findUnique({
       where: { id },
-      include: {
-        producao: true
-      }
+      include: {producao: true}
     });
 
     // Se não encontrar, retorna que não encontrou
@@ -124,13 +107,11 @@ async function atualizarOrcamento(req, res) {
     // Grava as alterações no banco de dados, deletando os itens antigos e criando os novos
     const orcamento = await prisma.$transaction(async (tx) => {
       await tx.orcamentoItem.deleteMany({
-        where: {
-          orcamentoId: id
-        }
+        where: {orcamentoId: id}
       });
 
       const orcamentoAtualizado = await tx.orcamento.update({
-        where: { id },
+        where: {id},
         data: {
           clienteId: Number(clienteId),
           descricao,
@@ -146,10 +127,7 @@ async function atualizarOrcamento(req, res) {
             }))
           }
         },
-        include: {
-          cliente: true,
-          itens: true
-        }
+        include: {cliente: true, itens: true}
       });
 
       // Precisa criar a produção se o status for aprovado e não houver produção existente

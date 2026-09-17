@@ -4,13 +4,7 @@ const prisma = require("../lib/prisma");
 async function listarProducoes(req, res) {
   try {
     const producoes = await prisma.producao.findMany({
-      include: {
-        orcamento: {
-          include: {
-            cliente: true
-          }
-        }
-      }
+      include: {orcamento: {include: {cliente: true}}}
     });
 
     res.json(producoes);
@@ -32,9 +26,7 @@ async function atualizarProducao(req, res) {
 
     // Busca a produção pelo id
     const producaoAtual = await prisma.producao.findUnique({
-      where: {
-        id
-      }
+      where: {id}
     });
     // Se não encontrar a produção, retorna uma mensagem de erro
     if (!producaoAtual) {
@@ -42,27 +34,21 @@ async function atualizarProducao(req, res) {
     }
     
     // Adiciona o status
-    const dadosAtualizacao = {
-      status
-    };
+    const dadosAtualizacao = {status};
     // Se for em produção e não tiver data de início, adiciona a data de início
     if (status === "em_producao" && !producaoAtual.dataInicio) {
-      dadosAtualizacao.dataInicio = new Date();
-    }
+      dadosAtualizacao.dataInicio = new Date();}
     // Se for concluído e não tiver data de fim, adiciona a data de fim
     if (status === "concluido" && !producaoAtual.dataFim) {
       dadosAtualizacao.dataFim = new Date();
       // Se não tiver data de início, adiciona a data de início
       if (!producaoAtual.dataInicio) {
         dadosAtualizacao.dataInicio = new Date();
-      }
-    }
+      }}
 
     // Atualiza a produção no banco de dados
     const producao = await prisma.producao.update({
-      where: {
-        id
-      },
+      where: {id},
       data: dadosAtualizacao,
       include: {
         orcamento: {
@@ -89,9 +75,7 @@ async function excluirProducao(req, res) {
     const id = Number(req.params.id);
     // Busca a produção pelo id e deleta se existir
     await prisma.producao.delete({
-      where: {
-        id
-      }
+      where: {id}
     });
     // Retorna uma mensagem de sucesso
     res.json({ mensagem: "Produção excluída com sucesso" });

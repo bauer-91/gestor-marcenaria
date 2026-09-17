@@ -1,4 +1,5 @@
 import { useState } from "react";
+// Importando as páginas do sistema
 import Clientes from "./pages/Clientes";
 import Orcamentos from "./pages/Orcamentos";
 import Producao from "./pages/Producao";
@@ -6,6 +7,8 @@ import Pagamentos from "./pages/Pagamentos";
 
 function App() {
   const [pagina, setPagina] = useState("menu");
+
+// Condições para renderizar a página correta com base no estado da variável "pagina"
 
   if (pagina === "clientes") {
     return <Clientes onVoltar={() => setPagina("menu")} />;
@@ -23,6 +26,7 @@ function App() {
   return <Pagamentos onVoltar={() => setPagina("menu")} />;
 }
 
+  // Renderiza o menu principal se nenhuma das condições acima for atendida
   return (
     <div className="app">
       <header className="cabecalho">

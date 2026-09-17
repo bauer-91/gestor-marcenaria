@@ -9,8 +9,8 @@ async function listarClientes(req, res) {
   } 
   // Se não conseguir, retorna um erro 500 com uma mensagem de erro
   catch (error) {
-    console.error(error);
-    res.status(500).json({ erro: "Erro ao buscar clientes" });
+  console.error(error);
+  res.status(500).json({ erro: "Erro ao buscar clientes" });
   }
 }
 
@@ -22,12 +22,7 @@ async function criarCliente(req, res) {
     const { nome, telefone, email, cpf } = req.body;
     // Cria o cliente no banco de dados
     const cliente = await prisma.cliente.create({
-      data: {
-        nome,
-        telefone,
-        email,
-        cpf
-      }
+      data: {nome, telefone, email, cpf}
     });
     // Retorna o cliente criado com status 201 (Created)
     res.status(201).json(cliente);
@@ -50,15 +45,9 @@ async function atualizarCliente(req, res) {
     const cliente = await prisma.cliente.update({
       where: {
         // Busca o cliente pelo id
-        id: id
-      },
+        id: id},
       // Atualiza os dados do cliente com os novos dados
-      data: {
-        nome,
-        telefone,
-        email,
-        cpf
-      }
+      data: {nome, telefone, email, cpf}
     });
     // Retorna o cliente atualizado
     res.json(cliente);
@@ -77,9 +66,7 @@ async function excluirCliente(req, res) {
     const id = Number(req.params.id);
     // Busca o cliente no banco de dados pelo id
     await prisma.cliente.delete({
-      where: {
-        id: id
-      }
+      where: {id: id}
     });
     // Se encontrar, retorna uma mensagem de sucesso
     res.json({ mensagem: "Cliente excluído com sucesso" });
@@ -93,7 +80,6 @@ async function excluirCliente(req, res) {
 module.exports = {
   listarClientes,
   criarCliente,
-  buscarCliente,
   atualizarCliente,
   excluirCliente
 };

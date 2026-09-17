@@ -3,12 +3,8 @@ const prisma = require("../lib/prisma");
 // Função para atualizar o status dos pagamentos de um orçamento
 async function atualizarStatusPagamentos(orcamentoId) {
   const orcamento = await prisma.orcamento.findUnique({
-    where: {
-      id: orcamentoId
-    },
-    include: {
-      pagamentos: true
-    }
+    where: {id: orcamentoId},
+    include: {pagamentos: true}
   });
   // Se não encontrar o orçamento, mensagem de erro
   if (!orcamento) {
@@ -25,18 +21,11 @@ async function atualizarStatusPagamentos(orcamentoId) {
 
   
   await prisma.pagamento.updateMany({
-    where: {
-      orcamentoId
-    },
-    data: {
-      status
-    }
+    where: {orcamentoId},
+    data: {status}
   });
 
-  return {
-    totalPago,
-    status
-  };
+  return {totalPago, status};
 }
 
 // Função para listar todos os pagamentos
@@ -44,9 +33,7 @@ async function listarPagamentos(req, res) {
   try {
     // Busca os pagamentos existentes
     const pagamentosExistentes = await prisma.pagamento.findMany({
-      select: {
-        orcamentoId: true
-      }
+      select: {orcamentoId: true}
     });
     // Pega os ids dos pagamentos mas tira os ids repetidos
     const orcamentosIds = [
@@ -62,13 +49,7 @@ async function listarPagamentos(req, res) {
 
     // Busca os pagamentos, trazendo junto de qual orçamento é
     const pagamentos = await prisma.pagamento.findMany({
-      include: {
-        orcamento: {
-          include: {
-            cliente: true
-          }
-        }
-      }
+      include: {orcamento: {include: {cliente: true}}}
     });
 
     res.json(pagamentos);
@@ -86,12 +67,7 @@ async function listarPagamentos(req, res) {
 async function criarPagamento(req, res) {
   try {
     // Pega os dados do pagamento a partir dos dados que vem do front-end
-    const {
-      orcamentoId,
-      valor,
-      dataPagamento,
-      metodo
-    } = req.body;
+    const {orcamentoId, valor, dataPagamento, metodo} = req.body;
 
     // Converte os valores para números
     const idOrcamento = Number(orcamentoId);
@@ -106,9 +82,7 @@ async function criarPagamento(req, res) {
 
     // Busca o orçamento pelo id
     const orcamento = await prisma.orcamento.findUnique({
-      where: {
-        id: idOrcamento
-      }
+    where: {id: idOrcamento}
     });
 
     // Se não encontrar o orçamento, retorna uma mensagem de erro
@@ -135,9 +109,7 @@ async function criarPagamento(req, res) {
 
     // Busca o pagamento atualizado para retornar na resposta
     const pagamentoAtualizado = await prisma.pagamento.findUnique({
-      where: {
-        id: pagamento.id
-      }
+      where: {id: pagamento.id}
     });
 
     // Retorna o pagamento criado, o total pago, o valor do orçamento e o status do pagamento
@@ -163,16 +135,10 @@ async function atualizarPagamento(req, res) {
     // Pega o id que vem do front-end
     const id = Number(req.params.id);
     // Pega os dados do pagamento que vem do front-end
-    const {
-      valor,
-      dataPagamento,
-      metodo
-    } = req.body;
+    const {valor, dataPagamento,metodo} = req.body;
     // Busca o pagamento pelo id
     const pagamentoExistente = await prisma.pagamento.findUnique({
-      where: {
-        id
-      }
+      where: {id}
     });
     // Se não encontrar o pagamento, retorna uma mensagem de erro
     if (!pagamentoExistente) {
@@ -192,9 +158,7 @@ async function atualizarPagamento(req, res) {
 
     // Atualiza o pagamento com os dados fornecidos
     const pagamento = await prisma.pagamento.update({
-      where: {
-        id
-      },
+      where: {id},
       data: {
         valor: valorPagamento,
         dataPagamento: dataPagamento
@@ -211,9 +175,7 @@ async function atualizarPagamento(req, res) {
 
     // Busca o pagamento atualizado para retornar na resposta
     const pagamentoAtualizado = await prisma.pagamento.findUnique({
-      where: {
-        id
-      },
+      where: {id},
       include: {
         orcamento: {
           include: {
@@ -245,9 +207,7 @@ async function excluirPagamento(req, res) {
     const id = Number(req.params.id);
     // Busca o pagamento pelo id
     const pagamento = await prisma.pagamento.findUnique({
-      where: {
-        id
-      }
+      where: {id}
     });
     // Se não encontrar o pagamento, retorna uma mensagem de erro
     if (!pagamento) {
@@ -257,9 +217,7 @@ async function excluirPagamento(req, res) {
     }
     // Exclui o pagamento pelo id
     await prisma.pagamento.delete({
-      where: {
-        id
-      }
+      where: {id}
     });
     // Atualiza o status dos pagamentos do orçamento
     const resultado = await atualizarStatusPagamentos(
@@ -273,7 +231,7 @@ async function excluirPagamento(req, res) {
     });
     // Se não conseguir, retorna um erro 500 com uma mensagem de erro
   } catch (error) {
-    console.error(error);
+      console.error(error);
 
     res.status(500).json({
       erro: "Erro ao excluir pagamento"

@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 
 const API_URL = "http://localhost:3001";
 
+// Mapeamento dos nomes dos status para exibição na tabela
 const nomesStatus = {
   pendente: "Pendente",
   aprovado: "Aprovado",
   rejeitado: "Rejeitado"
 };
 
+// Página de Orçamentos
 function Orcamentos({ onVoltar }) {
   const [clientes, setClientes] = useState([]);
   const [orcamentos, setOrcamentos] = useState([]);
@@ -31,7 +33,7 @@ function Orcamentos({ onVoltar }) {
     carregarClientes();
     carregarOrcamentos();
   }, []);
-
+  // Função para carregar os clientes do banco de dados
   async function carregarClientes() {
     try {
       const resposta = await fetch(`${API_URL}/clientes`);
@@ -43,7 +45,7 @@ function Orcamentos({ onVoltar }) {
       alert("Erro ao carregar clientes.");
     }
   }
-
+  // Função para carregar os orçamentos do banco de dados
   async function carregarOrcamentos() {
     try {
       const resposta = await fetch(`${API_URL}/orcamentos`);
@@ -55,7 +57,7 @@ function Orcamentos({ onVoltar }) {
       alert("Erro ao carregar orçamentos.");
     }
   }
-
+  // Função para alterar os campos de um item do orçamento
   function alterarItem(index, campo, valor) {
     const novosItens = [...itens];
 
@@ -66,7 +68,7 @@ function Orcamentos({ onVoltar }) {
 
     setItens(novosItens);
   }
-
+  // Função para adicionar um novo item ao orçamento
   function adicionarItem() {
     setItens([
       ...itens,
@@ -77,7 +79,7 @@ function Orcamentos({ onVoltar }) {
       }
     ]);
   }
-
+  // Função para remover um item do orçamento
   function removerItem(index) {
     if (itens.length === 1) {
       return;
@@ -85,27 +87,27 @@ function Orcamentos({ onVoltar }) {
 
     setItens(itens.filter((_, itemIndex) => itemIndex !== index));
   }
-
+  // Função para calcular o total de um item do orçamento
   function calcularTotalItem(item) {
     return (
       Number(item.quantidade || 0) *
       Number(item.precoUnitario || 0)
     );
   }
-
+  // Função para calcular o total do orçamento somando os totais de cada item
   function calcularTotal() {
     return itens.reduce((total, item) => {
       return total + calcularTotalItem(item);
     }, 0);
   }
-
+  // Função para formatar um valor como moeda o real
   function formatarMoeda(valor) {
     return Number(valor).toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL"
     });
   }
-
+  // Função para limpar o formulário e resetar o estado de edição
   function limparFormulario() {
     setClienteId("");
     setDescricao("");
@@ -121,7 +123,7 @@ function Orcamentos({ onVoltar }) {
 
     setOrcamentoEditando(null);
   }
-
+  // Função para salvar um orçamento
   async function salvarOrcamento(event) {
     event.preventDefault();
 
@@ -192,7 +194,7 @@ function Orcamentos({ onVoltar }) {
       alert("Erro ao salvar orçamento.");
     }
   }
-
+  // Função para editar um orçamento
   function editarOrcamento(orcamento) {
     setOrcamentoEditando(orcamento);
 
@@ -213,7 +215,7 @@ function Orcamentos({ onVoltar }) {
       behavior: "smooth"
     });
   }
-
+  // Função para excluir um orçamento
   async function excluirOrcamento(id) {
     const confirmar = window.confirm(
       "Tem certeza que deseja excluir este orçamento?"
@@ -254,7 +256,7 @@ function Orcamentos({ onVoltar }) {
         .includes(textoBusca)
     );
   });
-
+  // Renderiza a página de orçamentos com o formulário e a lista de orçamentos
   return (
     <div className="pagina">
 
