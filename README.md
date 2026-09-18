@@ -1,5 +1,7 @@
 # Gestor Marcenaria
 
+![Tela principal do sistema](Sistema_Menu_principal.png)
+
 Sistema para gerenciamento de:
 
 - Clientes
